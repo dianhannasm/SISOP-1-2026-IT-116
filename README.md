@@ -1,6 +1,7 @@
 # SISOP-1-2026-IT-116
 Dian Hanna Simanjuntak (5027251116)
 ## Reporting
+
 ### Soal 1 - Argo Ngawi Jesgejes
 Soal ini meminta untuk menganalisis data penumpang pada file `passenger.csv` berdasarkan opsi yang diberikan (a/b/c/d/e).    
 Opsi (a/b/c/d/e):
@@ -15,7 +16,7 @@ Opsi (a/b/c/d/e):
   ```bash
   wget -O passenger.csv "https://docs.google.com/spreadsheets/d/1NHmyS6wRO7To7ta-NLOOLHkPS6valvNaX7tawsv1zfE/export?format=csv&gid=0"
   ```
----
+
 **Bagian BEGIN (Inisialisasi)**
 
 ```awk
@@ -87,3 +88,41 @@ if (opsi == "e" && $3 == "Business") {
 
 Bagian ini digunakan untuk menghitung jumlah penumpang kelas Business dengan memfilter data (hanya data dengan nilai "Business" pada kolom kelas yang akan dihitung).  
 
+**Output**
+```awk
+END {
+    if (opsi == "a") {
+        print "Jumlah seluruh penumpang KANJ adalah ", jumlah, " orang"
+    }
+    else if (opsi == "b") {
+        print "Jumlah gerbong penumpang KANJ adalah ", length(gerbong)
+    }
+    else if (opsi == "c") {
+        print oldest, " adalah penumpang kereta tertua dengan usia ", max, " tahun"
+    }
+    else if (opsi == "d") {
+        printf "Rata-rata usia penumpang adalah %.0f tahun\n", sum/count
+    }
+    else if (opsi == "e") {
+        print "Jumlah penumpang business class ada ", business, " orang"
+    }
+    else {
+        print "Soal tidak dikenali. Gunakan a, b, c, d, atau e."
+        print "Contoh penggunaan: awk -f file.sh data.csv a"
+    }
+}
+```
+
+Bagian ini digunakan untuk menampilkan hasil akhir berdasarkan opsi yang dipilih oleh user.  
+
+Jika user memasukkan opsi selain a, b, c, d, atau e, maka program akan menampilkan pesan error sebagai berikut:
+
+```text
+Soal tidak dikenali. Gunakan a, b, c, d, atau e.
+Contoh penggunaan: awk -f file.sh data.csv a
+```
+  
+<img width="1718" height="686" alt="image" src="https://github.com/user-attachments/assets/860bc66c-353d-4b3f-916b-d7a58b274b76" />
+
+---  
+### Soal 2 - Ekspedisi Pesugihan Gunung Kawi - Mas Amba  
