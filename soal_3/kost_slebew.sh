@@ -166,8 +166,7 @@ echo "3. Hapus Cron Job Pengingat"
 echo "4. Kembali"
 read -p "Pilih [1-4]: " c
 case $c in
-1)
-   echo "Jadwal aktif:"
+1) echo "Jadwal aktif:"
    crontab -l 2>/dev/null || echo "Belum ada cron"
    ;;
 2) read -p "Masukkan jam (0-23): " jam
@@ -188,9 +187,8 @@ case $c in
    echo "Cron dihapus"
    ;;
 4) break ;;
-*)
-echo "[X] Pilihan tidak valid"
-;;
+*) echo "[X] Pilihan tidak valid"
+   ;;
 esac
 echo ""
 read -p "Klik Enter..."
