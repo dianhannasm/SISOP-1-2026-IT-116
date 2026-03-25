@@ -165,14 +165,14 @@ Di dalam repository terdapat file `gsxtrack.json` yang berisi data koordinat.
 **Parsing Data**  
 File `gsxtrack.json` berisi beberapa titik lokasi dengan atribut seperti `id`, `site_name`, `latitude` dan `longitude`.  
 Untuk mengekstrak data tersebut, dibuat `parserkoordinat.sh`:
-```awk
+```bash
 #!/bin/bash
 
 awk -F'"' '
 /"id"/ {
 id=$0
-gsub(/.*"id": "/, "", id) #Membuang "id": "
-gsub(/",?/, "", id)       #Membuang ",
+gsub(/.*"id": "/, "", id) 
+gsub(/",?/, "", id)       
 }
 /"site_name"/ {
 site=$0
