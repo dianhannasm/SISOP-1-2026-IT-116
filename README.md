@@ -11,7 +11,7 @@ Opsi (a/b/c/d/e):
 - d → rata-rata usia  
 - e → jumlah penumpang Business
     
-**Download file** `passenger.csv`
+**Download File** `passenger.csv`
   
   ```bash
   wget -O passenger.csv "https://docs.google.com/spreadsheets/d/1NHmyS6wRO7To7ta-NLOOLHkPS6valvNaX7tawsv1zfE/export?format=csv&gid=0"
@@ -125,4 +125,100 @@ Contoh penggunaan: awk -f file.sh data.csv a
 <img width="1718" height="686" alt="image" src="https://github.com/user-attachments/assets/860bc66c-353d-4b3f-916b-d7a58b274b76" />
 
 ---  
-### Soal 2 - Ekspedisi Pesugihan Gunung Kawi - Mas Amba  
+### Soal 2 - Ekspedisi Pesugihan Gunung Kawi - Mas Amba   
+Pada soal ini, dilakukan ekspedisi pencarian benda pusaka dengan melakukan perhitungan koordinat lokasi pusaka
+  
+**Download File**  
+Langkah pertama adalah menyiapkan toolsnya, yaitu `gdown`.  
+```bash
+sudo apt update
+sudo apt install python3-pip -y
+python3 -m venv env
+source env/bin/activate
+pip install gdown
+```
+
+Setelah ini, dibuat folder `ekspedisi` dan file `peta-ekspedisi-amba.pdf` diunduh di folder tersebut.  
+```bash
+mkdir ekspedisi
+cd ekspedisi
+gdown "https://drive.google.com/uc?id=1q10pHSC3KFfvEiCN3V6PTroPR7YGHF6Q"
+```
+  
+**Bedah Isi File**  
+```bash
+cat peta-ekspedisi-amba.pdf
+```
+dari hasil bedah isi file ditemukan sebuah link, yaitu:  
+```bash
+https://github.com/pocongcyber77/peta-gunung-kawi.git
+```
+  
+**Clone Repository**  
+Link tersebut kemudian di-clone.
+```bash
+git clone https://github.com/pocongcyber77/peta-gunung-kawi.git
+cd peta-gunung-kawi
+```
+Di dalam repository terdapat file `gsxtrack.json` yang berisi data koordinat.
+
+**Parsing Data**  
+File `gsxtrack.json` berisi beberapa titik lokasi dengan atribut seperti `id`, `site_name`, `latitude` dan `longitude`.  
+Untuk mengekstrak data tersebut, dibuat `parserkoordinat.sh`:
+```awk
+#!/bin/bash
+
+awk -F'"' '
+/"id"/ {
+id=$0
+gsub(/.*"id": "/, "", id) #Membuang "id": "
+gsub(/",?/, "", id)       #Membuang ",
+}
+/"site_name"/ {
+site=$0
+gsub(/.*"site_name": "/, "", site)
+gsub(/",?/,"", site)
+}
+/"latitude"/ {
+lat=$0
+gsub(/.*"latitude": /, "", lat)
+gsub(/,/, "", lat)
+}
+/"longitude"/ {
+lon=$0
+gsub(/.*"longitude": /, "", lon)
+gsub(/,/, "", lon)
+
+printf "%s, %s, %s, %s\n", id, site, lat, lon
+}
+' gsxtrack.json > titik-penting.txt
+```
+Script ini menggunakan `awk` untuk membaca file dan `gsub` untuk membersihkan teksnya.  
+Output disimpan dalam file `titik-penting.txt`  
+<img width="1714" height="175" alt="image" src="https://github.com/user-attachments/assets/bc9d696d-40f7-4461-bd29-a4dfe587c268" />
+
+**Lokasi Pusaka**  
+Keempat titik koordinat membentuk persegi. Lokasi pusaka berada di titik tengah diagonalnya.  
+Dibuat script `nemupusaka.sh`:  
+```bash
+#!/bin/bash
+
+lat1=$(sed -n '1p' titik-penting.txt | awk -F',' '{print $3}')
+lon1=$(sed -n '1p' titik-penting.txt | awk -F',' '{print $4}')
+
+lat3=$(sed -n '3p' titik-penting.txt | awk -F',' '{print $3}')
+lon3=$(sed -n '3p' titik-penting.txt | awk -F',' '{print $4}')
+
+mid_lat=$(echo "($lat1 + $lat3)/2" | bc -l)
+mid_lon=$(echo "($lon1 + $lon3)/2" | bc -l)
+
+printf "Koordinat pusat:\n%.5f, %.5f\n" $mid_lat $mid_lon > posisipusaka.txt
+```  
+- `sed -n '1p'` mengambil baris pertama
+- `awk -F','` memisahkan data berdasarkan koma
+- `{print $3}` mengambil kolom ke-3
+- `bc -l` melakukan perhitungan desimal
+
+**Hasil Akhir**  
+Hasil perhitungan disimpan ke `posisipusaka.txt`:  
+<img width="1711" height="115" alt="image" src="https://github.com/user-attachments/assets/788c1b81-a075-4c89-a7df-6e0225d25373" />
