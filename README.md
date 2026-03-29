@@ -222,3 +222,114 @@ printf "Koordinat pusat:\n%.5f, %.5f\n" $mid_lat $mid_lon > posisipusaka.txt
 **Hasil Akhir**  
 Hasil perhitungan disimpan ke `posisipusaka.txt`:  
 <img width="1711" height="115" alt="image" src="https://github.com/user-attachments/assets/788c1b81-a075-4c89-a7df-6e0225d25373" />
+
+---
+### Soal 3 - Kost Slebew Ambatukam  
+Pada soal ini, dibuat sebuah sistem manajemen kost untuk membantu pengelolaan data penghuni kost.  
+**Inisialisasi Path File**  
+Pada bagian ini, dilakukan pendefinisian beberapa variabel yang berisi path file yang digunakan dalam program.  
+```bash
+DB="data/penghuni.csv"
+LOG="log/tagihan.log"
+HISTORY="sampah/history_hapus.csv"
+LAPORAN="rekap/laporan_bulanan.txt"
+```
+**Cek Tagihan**  
+Fungsi ini digunakan untuk mengecek data penghuni yang memiliki status menunggak, kemudian mencatatnya ke dalam file log.  
+```bash
+check_tagihan() {
+while IFS=',' read -r nama kamar harga tanggal status
+do
+  if [[ "$status" == "menunggak" ]]; then
+     echo "[$(date '+%F %T')] TAGIHAN: $nama (Kamar $kamar) Menunggak Rp$harga" >> "$LOG"
+  fi
+done < "$DB"
+}
+```
+Bagian ini digunakan untuk menjalankan fungsi check_tagihan secara otomatis melalui parameter saat script dijalankan (langsung ngecek tagihan tanpa masuk menu).  
+```bash
+if [[ "$1" == "--check" ]]; then
+  check_tagihan
+  exit
+fi
+```
+**Fitur Tambah Penghuni**  
+*Tampilan Header & Input Data*  
+Menampilkan judul agar user tahu sedang berada di menu tambah penghuni dan menerima input dari user yang kemudian data disimpan ke variabel.  
+```bash
+echo "=============================="
+echo "       TAMBAH PENGHUNI        "
+echo "=============================="
+
+read -p "Nama                           : " nama
+read -p "Nomor Kamar                    : " kamar
+read -p "Harga Sewa                     : " harga
+read -p "Tanggal Masuk (YYYY-MM-DD)     : " tanggal
+read -p "Status Awal (Aktif/Menunggak)  : " stat
+```
+*Validasi Data*  
+```bash
+if ! [[ $harga =~ ^[0-9]+$ ]]; then             #memastikan harga harus angka positif
+  echo "[X] Harga harus angka!"
+  read -p "Klik Enter..."
+  return
+fi
+
+if ! date -d "$tanggal" >/dev/null 2>&1; then    #memastikan format tanggal benar
+  echo "[X] Format tanggal salah!"
+  read -p "Klik Enter..."
+  return
+fi
+
+if [[ "$tanggal" > "$(date +%F)" ]]; then        #memastikan tidak bisa input tanggal masa depan
+  echo "[X] Tidak boleh tanggal masa depan!"
+  read -p "Klik Enter..."
+  return
+fi
+
+if grep -q ",$kamar," "$DB"; then                #mencegah nomor kamar duplikat
+  echo "[X] Kamar sudah terisi!"
+  read -p "Klik Enter..."
+  return
+fi
+
+status=$(echo "$status" | tr '[:upper:]' '[:lower:]')            #mengubah input jadi huruf kecil
+if [[ "$status" != "aktif" && "$status" != "menunggak" ]]; then  #memastikan hanya dua pilihan, aktif/menunggak
+  echo "[X] Status harus Aktif/Menunggak"
+  read -p "Klik Enter..."
+  return
+fi
+```
+*Simpan ke Database*  
+Menambahkan ke file (append).  
+```bash
+echo "$nama,$kamar,$harga,$tanggal,$status" >> "$DB"
+
+echo "Berhasil ditambahkan!"                            #memberi feedback ke user
+read -p "Klik Enter..."
+}
+```
+
+**Fitur Hapus Penghuni**  
+Fungsi ini digunakan untuk menghapus data penghuni dari database utama, namun sebelum dihapus, datanya akan dipindahkan terlebih dahulu ke file `history_hapus.csv`.  
+```bash
+hapus_penghuni() {
+echo "========== HAPUS =========="                    #haeder
+read -p "Nama penghuni yang akan dihapus: " nama      #input nama
+tanggal=$(date +%F)                                   #ambil tanggal sekarang untuk mencatat kapan data dihapus
+awk -F',' -v nama="$nama" -v tgl="$tanggal" '        
+BEGIN{OFS=","}
+tolower($1)==tolower(nama){
+print $0,tgl >> "'$HISTORY'"                          #simpan ke history
+}
+' "$DB"
+
+sed -i "/^$nama,[^,]*,/Id" "$DB"                      #baris dengan nama tersebut akan dihapus dari file database
+
+echo "Data dipindah ke history & dihapus"             #feedback ke user
+read -p "Klik Enter..."
+}
+```
+
+**Fitur Tampilkan**
+Fungsi ini digunakan untuk menampilkan seluruh data penghuni.  
