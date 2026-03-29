@@ -101,7 +101,7 @@ END {
         print oldest, " adalah penumpang kereta tertua dengan usia ", max, " tahun"
     }
     else if (opsi == "d") {
-        printf "Rata-rata usia penumpang adalah %.0f tahun\n", sum/count
+        printf "Rata-rata usia penumpang adalah %d tahun\n", sum/count
     }
     else if (opsi == "e") {
         print "Jumlah penumpang business class ada ", business, " orang"
@@ -248,7 +248,7 @@ done < "$DB"
 ```
 Bagian ini digunakan untuk menjalankan fungsi check_tagihan secara otomatis melalui parameter saat script dijalankan (langsung ngecek tagihan tanpa masuk menu).  
 ```bash
-if [[ "$1" == "--check" ]]; then
+if [[ "$1" == "--check-tagihan" ]]; then
   check_tagihan
   exit
 fi
@@ -316,15 +316,19 @@ Fungsi ini digunakan untuk menghapus data penghuni dari database utama, namun se
 hapus_penghuni() {
 echo "========== HAPUS =========="                    #haeder
 read -p "Nama penghuni yang akan dihapus: " nama      #input nama
+read -p "Nomor kamar yang akan dihapus: " kamar
 tanggal=$(date +%F)                                   #ambil tanggal sekarang untuk mencatat kapan data dihapus
-awk -F',' -v nama="$nama" -v tgl="$tanggal" '        
+awk -F',' -v nama="$nama" -v kamar="$kamar" -v tgl="$tanggal" '        
 BEGIN{OFS=","}
-tolower($1)==tolower(nama){
+tolower($1)==tolower(nama) && $2==kamar{
 print $0,tgl >> "'$HISTORY'"                          #simpan ke history
 }
 ' "$DB"
 
-sed -i "/^$nama,[^,]*,/Id" "$DB"                      #baris dengan nama tersebut akan dihapus dari file database
+awk -F',' -v nama="$nama" -v kamar="$kamar" '
+BEGIN{OFS=","}
+!(tolower($1)==tolower(nama) && $2==kamar)
+' "$DB" > temp.csv && mv temp.csv "$DB"
 
 echo "Data dipindah ke history & dihapus"             #feedback ke user
 read -p "Klik Enter..."
@@ -443,7 +447,7 @@ case $c in                                                               #menent
     continue
    fi
    (crontab -l 2>/dev/null | grep -v kost_slebew.sh; \                   #memastikan hanya ada 1 cron aktif (overwrite)
-   echo "$menit $jam * * * $(pwd)/kost_slebew.sh --check") | crontab -
+   echo "$menit $jam * * * $(pwd)/kost_slebew.sh --checkitagihan") | crontab -
    echo "Cron diset jam $jam:$menit"
    ;;
 3) crontab -l 2>/dev/null | grep -v kost_slebew.sh | crontab -           #menghapus cron
