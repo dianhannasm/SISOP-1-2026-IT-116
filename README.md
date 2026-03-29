@@ -331,5 +331,202 @@ read -p "Klik Enter..."
 }
 ```
 
-**Fitur Tampilkan**
+**Fitur Tampilkan**  
 Fungsi ini digunakan untuk menampilkan seluruh data penghuni.  
+```bash
+tampilkan() {
+echo "===================================================================="
+echo "                          DAFTAR PENGHUNI                           "
+echo "===================================================================="
+
+awk -F',' '
+BEGIN {
+total=0; aktif=0; tunggak=0;                                                            #Inisialisasi jumlah penghuni, jumlah status aktif, jumlah menunggak
+printf "%-3s | %-15s | %-6s | %-10s | %-12s\n", "No","Nama","Kamar","Harga","Status"
+print "--------------------------------------------------------------------"
+}
+{
+printf "%-3d | %-15s | %-6s | Rp%-9s | %-12s\n", NR,$1,$2,$3,$5                         #tampilkan tiap data dalam format tabel
+total++
+if (tolower($5)=="aktif") aktif++                                                       #cek status
+else if (tolower($5)=="menunggak") tunggak++
+}
+END {
+print "--------------------------------------------------------------------"
+printf "Total Penghuni : %d | Aktif : %d | Menunggak : %d\n", total, aktif, tunggak     #menampilkan penghuni
+}
+' "$DB"
+echo "===================================================================="
+read -p "Klik Enter..."
+}
+```
+
+**Fitur Update**  
+Fungsi ini digunakan untuk mengubah status penghuni (Aktif / Menunggak) berdasarkan nama.  
+```bash
+update_status() {
+echo "========== UPDATE =========="
+read -p "Nama        : " nama                                        #user memasukkan nama dan status baru 
+read -p "Status Baru : " status
+status=$(echo "$status" | tr '[:upper:]' '[:lower:]')
+if [[ "$status" != "aktif" && "$status" != "menunggak" ]]; then      #memastikan hanya 2 nilai yang diperbolehkan
+  echo "[X] Status harus Aktif/Menunggak"
+  read -p "Klik Enter..."
+  return
+fi
+awk -F',' -v nama="$nama" -v status="$status" '
+BEGIN { OFS="," }
+{
+    if (tolower($1) == tolower(nama)) {                              #baca setiap baris jika nama cocok: ubah kolom ke-5 ($5) → status
+        $5 = status
+    }
+    print
+}' "$DB" > temp.csv && mv temp.csv "$DB"                             #hasil awk disimpan ke temp.csv lalu mengganti file lama
+
+echo "Status berhasil diupdate"
+read -p "Klik Enter..."
+}
+```
+
+**Fitur  Laporan**  
+Fungsi ini digunakan untuk menghitung total pemasukan dan total tunggakan berdasarkan data penghuni, lalu menampilkannya serta menyimpannya ke file.  
+```bash
+laporan() {
+aktif=0                                                            #inisialisasi variabel
+tunggak=0
+
+while IFS=',' read -r nama kamar harga tanggal status              #membaca file CSV baris per baris
+do
+if [[ "$status" == "aktif" ]]; then                                #jika status aktif → tambah ke pemasukan
+  ((aktif+=harga))
+elif [[ "$status" == "menunggak" ]]; then                          #jika menunggak → tambah ke tunggakan
+  ((tunggak+=harga))
+fi
+done < "$DB"                                                       #membaca dari file database
+
+echo "========== LAPORAN =========="                               #menampilkan hasil ke user
+echo "Total Pemasukan : Rp$aktif"
+echo "Total Tunggakan : Rp$tunggak"
+
+echo "===== LAPORAN BULANAN =====" > "$LAPORAN"
+echo "Pemasukan : Rp$aktif" >> "$LAPORAN"                          #hasil disimpan ke rekap/laporan_bulanan.txt
+echo "Tunggakan : Rp$tunggak" >> "$LAPORAN"
+
+read -p "Klik Enter..."
+}
+```
+
+**Fitur Cron Job**  
+Fungsi ini digunakan untuk mengatur jadwal otomatis (cron job).  
+```bash
+kelola_cron() {
+while true
+do
+echo "========== CRON =========="                                        #menampilkan pilihan menu
+echo "1. Lihat Cron Job Aktif"
+echo "2. Tambah Cron Job Pengingat"
+echo "3. Hapus Cron Job Pengingat"
+echo "4. Kembali"
+read -p "Pilih [1-4]: " c
+case $c in                                                               #menentukan aksi berdasarkan pilihan user
+1) echo "Jadwal aktif:"
+   crontab -l 2>/dev/null || echo "Belum ada cron"                       #menampilkan daftar cron
+   ;;
+2) read -p "Masukkan jam (0-23): " jam                                   #input jam dan menit
+   read -p "Masukkan menit (0-59): " menit
+   if ! [[ "$jam" =~ ^[0-9]+$ ]] || ! [[ "$menit" =~ ^[0-9]+$ ]]; then   #memastikan input berupa angka
+    echo "[X] Harus angka!"
+    continue
+   fi
+   if (( jam < 0 || jam > 23 || menit < 0 || menit > 59 )); then         #memastikan jam & menit valid
+    echo "[X] Jam/menit tidak valid!"
+    continue
+   fi
+   (crontab -l 2>/dev/null | grep -v kost_slebew.sh; \                   #memastikan hanya ada 1 cron aktif (overwrite)
+   echo "$menit $jam * * * $(pwd)/kost_slebew.sh --check") | crontab -
+   echo "Cron diset jam $jam:$menit"
+   ;;
+3) crontab -l 2>/dev/null | grep -v kost_slebew.sh | crontab -           #menghapus cron
+   echo "Cron dihapus"
+   ;;
+4) break ;;                                                              #keluar dari loop dan kembali ke menu utama
+*) echo "[X] Pilihan tidak valid"
+   ;;
+esac
+echo ""
+read -p "Klik Enter..."
+done
+}
+```
+
+**Menu Utama**  
+Agar lebih mudah digunakan, program ini dilengkapi dengan menu utama yang berfungsi sebagai pusat navigasi semua fitur.  
+```bash
+while true
+do
+clear
+echo " _           _          _     _             "
+echo "| |_ ___ ___| |_    ___| |___| |_ ___ _ _ _ "
+echo "| '_| . |_ -|  _|  |_ -| | -_| . | -_| | | |"
+echo "|_,_|___|___|_|    |___|_|___|___|___|_____|"
+echo "======================================="
+echo "      SISTEM MANAJEMEN KOST SLEBEW      "
+echo "======================================="
+echo "1. Tambah Penghuni"
+echo "2. Hapus Penghuni"
+echo "3. Tampilkan Daftar"
+echo "4. Update Status"
+echo "5. Laporan Keuangan"
+echo "6. Kelola Cron"
+echo "7. Exit"
+echo "======================================="
+
+read -p "Pilih [1-7]: " pilih
+
+case $pilih in
+1) tambah_penghuni ;;
+2) hapus_penghuni ;;
+3) tampilkan ;;
+4) update_status ;;
+5) laporan ;;
+6) kelola_cron ;;
+7) exit ;;
+*) echo "[X] Pilihan tidak valid"; sleep 1 ;;
+esac
+done
+```
+
+**Output**  
+*Tambah Penghuni*  
+<img width="1919" height="747" alt="image" src="https://github.com/user-attachments/assets/c96ce126-4963-4774-b66f-af9121c0c472" />
+
+*Hapus Penghuni*  
+<img width="1919" height="592" alt="image" src="https://github.com/user-attachments/assets/1eb84e75-c4c5-4dec-9d21-a4a6c82027fa" />
+
+*Update Status*
+<img width="1917" height="607" alt="image" src="https://github.com/user-attachments/assets/8f2d5159-52bc-494e-b8b9-cd37e7dbf429" />
+
+*Tampilkan Daftar Penghuni*  
+<img width="1919" height="848" alt="image" src="https://github.com/user-attachments/assets/a77dc7ed-331e-4d1a-bbbc-b3ec8910768f" />
+
+*Laporan*
+<img width="1919" height="583" alt="image" src="https://github.com/user-attachments/assets/f030e53d-aeb3-4dae-a69e-f6ba074e9c10" />
+
+*Kelola Cron*
+<img width="1919" height="745" alt="image" src="https://github.com/user-attachments/assets/0b2cd2ed-fe15-4bb6-b3fc-44f835221cc4" />  
+<img width="1919" height="317" alt="image" src="https://github.com/user-attachments/assets/4ad3562d-3e1a-4a34-a7f5-685fceb2f1a5" />  
+<img width="1906" height="261" alt="image" src="https://github.com/user-attachments/assets/d346b844-7eb1-4dd2-a507-4db60049ebd5" />  
+
+**Isi File**  
+`penghuni.csv`  
+<img width="1919" height="178" alt="image" src="https://github.com/user-attachments/assets/83357fe6-9d47-4e36-91e3-d36801df8e04" />  
+`tagihan.log`  
+<img width="1907" height="167" alt="image" src="https://github.com/user-attachments/assets/f0658343-4b67-4902-bcfa-b3232bb72639" />  
+`laporan_bulanan.txt`  
+<img width="1908" height="159" alt="image" src="https://github.com/user-attachments/assets/e2afe27a-2fc5-4ab4-9395-f117d0045f53" />  
+`history_hapus.txt`  
+<img width="1907" height="154" alt="image" src="https://github.com/user-attachments/assets/e1c12cf3-d831-4041-b73b-b5e2ba0135a1" />  
+
+
+
+
