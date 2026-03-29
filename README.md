@@ -120,9 +120,9 @@ Jika user memasukkan opsi selain a, b, c, d, atau e, maka program akan menampilk
 ```text
 Soal tidak dikenali. Gunakan a, b, c, d, atau e.
 Contoh penggunaan: awk -f file.sh data.csv a
-```
-  
-<img width="1718" height="686" alt="image" src="https://github.com/user-attachments/assets/860bc66c-353d-4b3f-916b-d7a58b274b76" />
+```  
+<img width="1907" height="688" alt="image" src="https://github.com/user-attachments/assets/67cec956-aba7-4479-8332-56eeade6e4ff" />
+
 
 ---  
 ### Soal 2 - Ekspedisi Pesugihan Gunung Kawi - Mas Amba   
@@ -505,16 +505,16 @@ done
 <img width="1919" height="747" alt="image" src="https://github.com/user-attachments/assets/c96ce126-4963-4774-b66f-af9121c0c472" />
 
 *Hapus Penghuni*  
-<img width="1919" height="592" alt="image" src="https://github.com/user-attachments/assets/1eb84e75-c4c5-4dec-9d21-a4a6c82027fa" />
+<img width="1919" height="606" alt="image" src="https://github.com/user-attachments/assets/cdd2d6aa-c504-46a2-a73a-e7559d0f85d0" />
 
 *Update Status*
 <img width="1917" height="607" alt="image" src="https://github.com/user-attachments/assets/8f2d5159-52bc-494e-b8b9-cd37e7dbf429" />
 
 *Tampilkan Daftar Penghuni*  
-<img width="1919" height="848" alt="image" src="https://github.com/user-attachments/assets/a77dc7ed-331e-4d1a-bbbc-b3ec8910768f" />
+<img width="1919" height="864" alt="image" src="https://github.com/user-attachments/assets/393a9743-62e3-4d02-9491-9a128a476a2e" />  
 
 *Laporan*
-<img width="1919" height="583" alt="image" src="https://github.com/user-attachments/assets/f030e53d-aeb3-4dae-a69e-f6ba074e9c10" />
+<img width="1919" height="576" alt="image" src="https://github.com/user-attachments/assets/7515a0ee-b8a3-4c3c-bb93-e724cfc07856" />  
 
 *Kelola Cron*
 <img width="1919" height="745" alt="image" src="https://github.com/user-attachments/assets/0b2cd2ed-fe15-4bb6-b3fc-44f835221cc4" />  
@@ -523,13 +523,13 @@ done
 
 **Isi File**  
 `penghuni.csv`  
-<img width="1919" height="178" alt="image" src="https://github.com/user-attachments/assets/83357fe6-9d47-4e36-91e3-d36801df8e04" />  
+<img width="1910" height="212" alt="image" src="https://github.com/user-attachments/assets/b349142e-bb3b-41b1-9447-ec89bdd2cbb9" />  
 `tagihan.log`  
-<img width="1907" height="167" alt="image" src="https://github.com/user-attachments/assets/f0658343-4b67-4902-bcfa-b3232bb72639" />  
+<img width="1908" height="306" alt="image" src="https://github.com/user-attachments/assets/e38cc303-0177-4ee3-86af-3a65a57d0e01" />   
 `laporan_bulanan.txt`  
-<img width="1908" height="159" alt="image" src="https://github.com/user-attachments/assets/e2afe27a-2fc5-4ab4-9395-f117d0045f53" />  
-`history_hapus.txt`  
-<img width="1907" height="154" alt="image" src="https://github.com/user-attachments/assets/e1c12cf3-d831-4041-b73b-b5e2ba0135a1" />  
+<img width="1919" height="167" alt="image" src="https://github.com/user-attachments/assets/c3cc4131-1225-450d-885e-ef9f49f75282" />  
+`history_hapus.csv`  
+<img width="1906" height="355" alt="image" src="https://github.com/user-attachments/assets/78caf017-32c1-4cf8-8c74-4f5fe0c52d8b" />
 
 
 
