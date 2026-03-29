@@ -39,7 +39,7 @@ END {
         print oldest, " adalah penumpang kereta tertua dengan usia ", max, " tahun"
     }
     else if (opsi == "d") {
-        printf "Rata-rata usia penumpang adalah %.0f tahun\n", sum/count
+        printf "Rata-rata usia penumpang adalah %d tahun\n", sum/count
     }
     else if (opsi == "e") {
         print "Jumlah penumpang business class ada ", business, " orang"

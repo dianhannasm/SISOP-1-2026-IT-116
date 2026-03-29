@@ -12,7 +12,7 @@ do
   fi
 done < "$DB"
 }
-if [[ "$1" == "--check" ]]; then
+if [[ "$1" == "--check-tagihan" ]]; then
   check_tagihan
   exit
 fi
@@ -69,15 +69,19 @@ read -p "Klik Enter..."
 hapus_penghuni() {
 echo "========== HAPUS =========="
 read -p "Nama penghuni yang akan dihapus: " nama
+read -p "Nomor kamar yang akan dihapus: " kamar
 tanggal=$(date +%F)
-awk -F',' -v nama="$nama" -v tgl="$tanggal" '
+awk -F',' -v nama="$nama" -v kamar="$kamar" -v tgl="$tanggal" '
 BEGIN{OFS=","}
-tolower($1)==tolower(nama){
+tolower($1)==tolower(nama) && $2==kamar {
 print $0,tgl >> "'$HISTORY'"
 }
 ' "$DB"
 
-sed -i "/^$nama,[^,]*,/Id" "$DB"
+awk -F',' -v nama="$nama" -v kamar="$kamar" '
+BEGIN{OFS=","}
+!(tolower($1)==tolower(nama) && $2==kamar)
+' "$DB" > temp.csv && mv temp.csv "$DB"
 
 echo "Data dipindah ke history & dihapus"
 read -p "Klik Enter..."
@@ -180,7 +184,7 @@ case $c in
     continue
    fi
    (crontab -l 2>/dev/null | grep -v kost_slebew.sh; \
-   echo "$menit $jam * * * $(pwd)/kost_slebew.sh --check") | crontab -
+   echo "$menit $jam * * * $(pwd)/kost_slebew.sh --check-tagihan") | crontab -
    echo "Cron diset jam $jam:$menit"
    ;;
 3) crontab -l 2>/dev/null | grep -v kost_slebew.sh | crontab -
